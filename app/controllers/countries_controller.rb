@@ -77,6 +77,10 @@ class CountriesController < ApplicationController
       format.json { head :no_content }
     end
   end
+  def data
+    countries = Country.all
+    render json: countries.map { |c| { code: c.code, been: c.been } } # Adjust the mapping as per your model
+  end
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_country
@@ -85,7 +89,7 @@ class CountriesController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def country_params
-      params.require(:country).permit(:name, :rank, :been)
+      params.require(:country).permit(:name, :rank, :been, :code)  
     end
 
 

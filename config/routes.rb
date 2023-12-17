@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
- 
+  # Place non-resourceful routes above resourceful ones
+  get '/countries/data', to: 'countries#data'
+
   resources :countries do
     collection do
       patch :update_ranks
@@ -9,8 +11,5 @@ Rails.application.routes.draw do
     end
   end
 
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
-
-  # Defines the root path route ("/")
-  # root "articles#index"
+  # Define other routes here
 end

@@ -83,3 +83,37 @@
     });
   });
 </script>
+
+<div id="world-map" style="height: 500px;"></div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var map = L.map('world-map').setView([20, 0], 2); // Adjust the view center and zoom level
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18
+    }).addTo(map);
+
+    // Fetch country data from your Rails backend
+    fetch('/countries/data.json')
+      .then(function(response) {
+        return response.json();
+      })
+      .then(function(countriesData) {
+        // Load your geoJSON data
+        fetch('/custom.geo.json')
+          .then(function(response) {
+            return response.json();
+          })
+          .then(function(geojsonData) {
+            L.geoJson(geojsonData, {
+              style: function(feature) {
+                var country = countriesData.find(c => c.code === feature.properties.ISO_A2);
+                var color = country && country.been ? 'blue' : 'grey';
+                return { fillColor: color, weight: 1, opacity: 1, color: 'white', fillOpacity: 0.7 };
+              }
+            }).addTo(map);
+          });
+      });
+  });
+</script>

@@ -1,13 +1,13 @@
 # db/seeds.rb
-require 'csv'
+require 'json'
 
-file_path = Rails.root.join('lib', 'seeds', 'countries.csv')
-country_names = CSV.read(file_path).flatten
+file_path = Rails.root.join('lib', 'seeds', 'countries.json')
+countries_data = JSON.parse(File.read(file_path))
 
 rank = 1
-country_names.each do |name|
-  # Find or create the country by name
-  country = Country.find_or_initialize_by(name: name)
+countries_data.each do |code, name|
+  # Find or create the country by name and code
+  country = Country.find_or_initialize_by(name: name, code: code)
 
   # Only set the rank and save if it's a new record
   if country.new_record?
