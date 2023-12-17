@@ -1,0 +1,48 @@
+/* app/assets/stylesheets/countries.css */
+
+.countries-container {
+    display: flex;
+    width: 50%; /* Adjust width as needed */
+  }
+  
+  .countries-not-visited, .countries-visited {
+    width: 50%; /* Adjust the width as necessary */
+    margin-right: 10px; /* Spacing between columns */
+    list-style-type: none;
+    border: 2px solid #ccc; /* Add border */
+    border-radius: 5px; /* Optional: rounded corners */
+    padding: 10px; /* Padding inside the border */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional: subtle shadow */
+  }
+  
+  @media (max-width: 600px) {
+    .countries-container {
+      flex-direction: column;
+    }
+  
+    .countries-not-visited, .countries-visited {
+      width: 100%; /* Full width on smaller screens */
+      margin-right: 0; /* Remove margin on smaller screens */
+      margin-bottom: 10px; /* Spacing between columns on smaller screens */
+    }
+  }
+  
+  #countries-not-visited-list, #countries-visited-list {
+    list-style-type: none;
+    padding-left: 0;
+  }
+  
+  .country-item {
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    border-radius: 4px;
+    cursor: grab;
+  }
+  
+  .country-item:hover {
+    background-color: rgb(91, 104, 220);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+  

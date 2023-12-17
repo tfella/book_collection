@@ -1,0 +1,85 @@
+<!-- app/views/countries/index.html.erb -->
+
+<div class="countries-container">
+  <div class="countries-not-visited">
+    <h3>Not Visited</h3>
+    <ul id="countries-not-visited-list" class="sortable-list">
+      <% @countries.where(been: false).order(:rank).each do |country| %>
+        <%= render 'country_item', country: country %>
+      <% end %>
+    </ul>
+  </div>
+
+  <div class="countries-visited">
+    <h3>Visited</h3>
+    <ul id="countries-visited-list" class="sortable-list">
+      <% @countries.where(been: true).order(:rank).each do |country| %>
+        <%= render 'country_item', country: country %>
+      <% end %>
+    </ul>
+  </div>
+</div>
+
+<!-- Include SortableJS from a CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize sortable for both lists
+    ['countries-not-visited-list', 'countries-visited-list'].forEach(function(listId) {
+      var el = document.getElementById(listId);
+      Sortable.create(el, {
+        group: 'countries',
+        onEnd: function(evt) {
+          updateRanksForList(el);
+        }
+      });
+    });
+
+    // Function to update ranks
+    function updateRanksForList(list) {
+      var countryIds = Array.from(list.children).map(function(item) {
+        return item.getAttribute('data-id');
+      });
+
+      // AJAX call to update ranks
+      fetch('<%= update_ranks_countries_path %>', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({ country_ids: countryIds })
+      });
+    }
+
+    // Checkbox change handler
+    document.querySelectorAll('.country-been-checkbox').forEach(function(checkbox) {
+      checkbox.addEventListener('change', function() {
+        var countryId = this.dataset.id;
+        var beenStatus = this.checked;
+        var countryItem = document.querySelector('.country-item[data-id="' + countryId + '"]');
+
+        // AJAX request to update been status
+        fetch('/countries/' + countryId + '/toggle_been', {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+          },
+          body: JSON.stringify({ been: beenStatus })
+        }).then(function(response) {
+          // After successful update, move the country item to the correct list
+          if (response.ok) {
+            var targetListId = beenStatus ? 'countries-visited-list' : 'countries-not-visited-list';
+            document.getElementById(targetListId).appendChild(countryItem);
+
+            // Update ranks for both lists
+            updateRanksForList(document.getElementById('countries-not-visited-list'));
+            updateRanksForList(document.getElementById('countries-visited-list'));
+          }
+        });
+      });
+    });
+  });
+</script>
