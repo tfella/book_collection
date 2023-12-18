@@ -23,8 +23,51 @@
 <!-- Include SortableJS from a CDN -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
 
+<div id="world-map" style="height: 500px;"></div>
+
 <script>
   document.addEventListener('DOMContentLoaded', function() {
+    var geoJsonLayer;
+
+    // Function to update the map style
+    function updateCountryStyle(countryCode, beenStatus) {
+      if (geoJsonLayer) {
+        geoJsonLayer.eachLayer(function(layer) {
+          if (layer.feature.properties.adm0_a3 === countryCode) {
+            var newColor = beenStatus ? 'blue' : 'grey';
+            layer.setStyle({ fillColor: newColor });
+          }
+        });
+      }
+    }
+
+    // Initialize the map
+    var map = L.map('world-map').setView([20, 0], 2);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18
+    }).addTo(map);
+
+    // Fetch country data and initialize the map layer
+    fetch('/countries/data.json')
+      .then(function(response) {
+        return response.json();
+      })
+      .then(function(countriesData) {
+        fetch('/custom.geo.json')
+          .then(function(response) {
+            return response.json();
+          })
+          .then(function(geojsonData) {
+            geoJsonLayer = L.geoJson(geojsonData, {
+              style: function(feature) {
+                var country = countriesData.find(c => c.code === feature.properties.adm0_a3);
+                var color = country && country.been ? 'blue' : 'grey';
+                return { fillColor: color, weight: 1, opacity: 1, color: 'white', fillOpacity: 0.7 };
+              }
+            }).addTo(map);
+          });
+      });
+
     // Initialize sortable for both lists
     ['countries-not-visited-list', 'countries-visited-list'].forEach(function(listId) {
       var el = document.getElementById(listId);
@@ -42,7 +85,6 @@
         return item.getAttribute('data-id');
       });
 
-      // AJAX call to update ranks
       fetch('<%= update_ranks_countries_path %>', {
         method: 'PATCH',
         headers: {
@@ -57,10 +99,9 @@
     document.querySelectorAll('.country-been-checkbox').forEach(function(checkbox) {
       checkbox.addEventListener('change', function() {
         var countryId = this.dataset.id;
+        var countryCode = this.dataset.code; // Ensure data-code is set on each checkbox
         var beenStatus = this.checked;
-        var countryItem = document.querySelector('.country-item[data-id="' + countryId + '"]');
 
-        // AJAX request to update been status
         fetch('/countries/' + countryId + '/toggle_been', {
           method: 'PATCH',
           headers: {
@@ -69,51 +110,18 @@
           },
           body: JSON.stringify({ been: beenStatus })
         }).then(function(response) {
-          // After successful update, move the country item to the correct list
           if (response.ok) {
+            updateCountryStyle(countryCode, beenStatus);
             var targetListId = beenStatus ? 'countries-visited-list' : 'countries-not-visited-list';
-            document.getElementById(targetListId).appendChild(countryItem);
+            var targetList = document.getElementById(targetListId);
+            var countryItem = document.querySelector('.country-item[data-id="' + countryId + '"]');
+            targetList.appendChild(countryItem);
 
-            // Update ranks for both lists
             updateRanksForList(document.getElementById('countries-not-visited-list'));
             updateRanksForList(document.getElementById('countries-visited-list'));
           }
         });
       });
     });
-  });
-</script>
-
-<div id="world-map" style="height: 500px;"></div>
-
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    var map = L.map('world-map').setView([20, 0], 2); // Adjust the view center and zoom level
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 18
-    }).addTo(map);
-
-    // Fetch country data from your Rails backend
-    fetch('/countries/data.json')
-      .then(function(response) {
-        return response.json();
-      })
-      .then(function(countriesData) {
-        // Load your geoJSON data
-        fetch('/custom.geo.json')
-          .then(function(response) {
-            return response.json();
-          })
-          .then(function(geojsonData) {
-            L.geoJson(geojsonData, {
-              style: function(feature) {
-                var country = countriesData.find(c => c.code === feature.properties.ISO_A2);
-                var color = country && country.been ? 'blue' : 'grey';
-                return { fillColor: color, weight: 1, opacity: 1, color: 'white', fillOpacity: 0.7 };
-              }
-            }).addTo(map);
-          });
-      });
   });
 </script>
