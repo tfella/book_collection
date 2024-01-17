@@ -2,9 +2,15 @@
 
 <%= render @country %>
 
+<!-- Display the notes -->
+<div class="country-notes">
+  <strong>Notes:</strong>
+  <p><%= @country.notes %></p>
+</div>
+
 <div>
   <%= link_to "Edit this country", edit_country_path(@country) %> |
   <%= link_to "Back to countries", countries_path %>
 
-  <%= button_to "Destroy this country", @country, method: :delete %>
+  <%= button_to "Destroy this country", @country, method: :delete, data: { confirm: "Are you sure?" } %>
 </div>

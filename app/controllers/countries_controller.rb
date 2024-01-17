@@ -81,6 +81,12 @@ class CountriesController < ApplicationController
     countries = Country.all
     render json: countries.map { |c| { code: c.code, been: c.been } } # Adjust the mapping as per your model
   end
+
+  def your_action_name
+    @visited_countries_count = Country.where(been: true).count
+    # Other necessary code...
+  end
+  
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_country
@@ -89,7 +95,7 @@ class CountriesController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def country_params
-      params.require(:country).permit(:name, :rank, :been, :code)  
+      params.require(:country).permit(:name, :rank, :been, :code, :notes)  
     end
 
 

@@ -1,5 +1,9 @@
 <!-- app/views/countries/_country_item.html.erb -->
 <li class="country-item" data-id="<%= country.id %>">
   <%= "#{country.rank}. #{country.name}" %>
+   
   <%= check_box_tag "been_#{country.id}", "been", country.been, class: "country-been-checkbox", data: { id: country.id } %>
+  
+  <!-- Link to Edit instead of Show -->
+  <%= link_to 'Edit', edit_country_path(country), class: 'edit-country-btn' %>
 </li>
